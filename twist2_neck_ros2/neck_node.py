@@ -13,7 +13,7 @@ from twist2_neck_ros2.neck_controller.neck_controller import (
     MotorConfig,
     MotorType,
 )
-from motion_smoothener.smoothen_motion import Smoothener
+from twist2_neck_ros2.motion_smoothener import Smoothener
 
 from tf2_ros import TransformException, TransformStamped
 from tf2_ros.buffer import Buffer
