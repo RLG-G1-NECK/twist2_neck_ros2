@@ -13,6 +13,7 @@ from twist2_neck_ros2.neck_controller.neck_controller import (
     MotorConfig,
     MotorType,
 )
+from motion_smoothener.smoothen_motion import Smoothener
 
 from tf2_ros import TransformException, TransformStamped
 from tf2_ros.buffer import Buffer
@@ -58,6 +59,11 @@ class NeckNode(Node):
         self.timer: Timer = self.create_timer(poll_period, self._move_head)
         self.shutting_down = False
 
+        # NEW
+        self.pitch_smoothener = Smoothener(max_d2_per_step="max_pitch_d2")
+        self.yaw_smoothener = Smoothener(max_d2_per_step="max_yaw_d2")
+
+
     def _declare_parameters(self):
         """Declare all parameters of this node."""
         self.declare_parameter(
@@ -99,7 +105,10 @@ class NeckNode(Node):
             world_head_tf.transform.rotation.w]
         _, pitch, yaw = Rotation.from_quat(quat).as_euler('xyz')
         # self.get_logger().info(f"{pitch:.3f} {yaw:.3f}")
-        self.controller.set_pos(yaw, pitch)
+
+        # NEW
+        self.controller.set_pos(
+            self.yaw_smoothener(yaw), self.pitch_smoothener(pitch))
 
     def safe_shutdown(self):
         """Return neck to safe position then deinit."""
